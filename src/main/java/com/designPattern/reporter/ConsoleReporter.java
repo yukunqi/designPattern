@@ -7,6 +7,7 @@ import com.designPattern.viewer.StatViewer;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ConsoleReporter extends AbstractReporter {
 
@@ -19,8 +20,9 @@ public class ConsoleReporter extends AbstractReporter {
     public void startRepeatedReport(long periodInSeconds, long durationInSeconds) {
         long durationInMillis = durationInSeconds * 1000;
         long endTimeInMillis = System.currentTimeMillis();
+        long startTimeInMillis = endTimeInMillis - durationInMillis;
+        executor.scheduleAtFixedRate(() -> doReport(startTimeInMillis,endTimeInMillis),0L,periodInSeconds, TimeUnit.SECONDS);
 
-        this.scheduleReport(endTimeInMillis,durationInMillis,periodInSeconds);
     }
 
 
