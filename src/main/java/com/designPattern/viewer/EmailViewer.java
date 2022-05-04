@@ -12,21 +12,16 @@ public class EmailViewer implements StatViewer {
     private EmailSender emailSender;
     private List<String> toAddresses = new ArrayList<>();
 
-    /**
-     * 这里正确的形式可能是依赖注入，而不是自己实例化。但是email应该默认就是email类型的format 所以直接初始化成默认的了
-     */
-    private StatFormat format = new EmailStatFormat();
+
+    private StatFormat format;
 
     public EmailViewer() {
-        this.emailSender = new EmailSender(/*省略参数*/);
+        this(new EmailSender(),new EmailStatFormat());
     }
 
-    public void setFormat(StatFormat format) {
-        this.format = format;
-    }
-
-    public EmailViewer(EmailSender emailSender) {
+    public EmailViewer(EmailSender emailSender, StatFormat format) {
         this.emailSender = emailSender;
+        this.format = format;
     }
 
     public void addToAddress(String address) {

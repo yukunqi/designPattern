@@ -9,14 +9,16 @@ import java.util.Map;
 
 public class JsonStatFormat implements StatFormat{
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper;
 
     public JsonStatFormat() {
+        this(new ObjectMapper());
     }
 
-    public void setObjectMapper(ObjectMapper objectMapper) {
+    public JsonStatFormat(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
+
 
     @Override
     public String format(Map<String, RequestStat> requestStatMap) {

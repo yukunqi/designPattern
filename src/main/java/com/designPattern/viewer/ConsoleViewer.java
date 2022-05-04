@@ -7,7 +7,15 @@ import java.util.Map;
 
 public class ConsoleViewer implements StatViewer {
 
-    private StatFormat statFormat = new JsonStatFormat();
+    private StatFormat statFormat;
+
+    public ConsoleViewer() {
+        this(new JsonStatFormat());
+    }
+
+    public ConsoleViewer(StatFormat statFormat) {
+        this.statFormat = statFormat;
+    }
 
     public void setStatFormat(StatFormat statFormat) {
         this.statFormat = statFormat;
