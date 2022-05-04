@@ -10,15 +10,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class EmailReporter extends AbstractReporter {
 
     private static final Long DAY_HOURS_IN_SECONDS = 86400L;
 
-    public EmailReporter(MetricsStorage metricsStorage, Aggregator aggregator, StatViewer viewer, ScheduledExecutorService executor) {
-        super(metricsStorage, aggregator, viewer, executor);
+    public EmailReporter(MetricsStorage metricsStorage, Aggregator aggregator, StatViewer viewer) {
+        super(metricsStorage, aggregator, viewer);
     }
 
 
@@ -60,7 +58,7 @@ public class EmailReporter extends AbstractReporter {
     public static class EmailReporterBuilder {
         private MetricsStorage metricsStorage;
         private Aggregator aggregator;
-        private ScheduledExecutorService executor;
+
         private StatViewer statViewer;
 
         private EmailReporterBuilder() {
@@ -70,7 +68,6 @@ public class EmailReporter extends AbstractReporter {
             EmailReporterBuilder emailReporterBuilder = new EmailReporterBuilder();
             emailReporterBuilder.metricsStorage = new RedisMetricsStorage();
             emailReporterBuilder.aggregator = new Aggregator();
-            emailReporterBuilder.executor = Executors.newSingleThreadScheduledExecutor();
             return emailReporterBuilder;
         }
 
@@ -80,7 +77,7 @@ public class EmailReporter extends AbstractReporter {
         }
 
         public EmailReporter build() {
-            return new EmailReporter(this.metricsStorage, this.aggregator, this.statViewer, this.executor);
+            return new EmailReporter(this.metricsStorage, this.aggregator, this.statViewer);
         }
     }
 }

@@ -11,9 +11,11 @@ import java.util.concurrent.TimeUnit;
 
 public class ConsoleReporter extends AbstractReporter {
 
+    private ScheduledExecutorService executor;
 
     public ConsoleReporter(MetricsStorage metricsStorage, Aggregator aggregator, StatViewer viewer, ScheduledExecutorService executor) {
-        super(metricsStorage, aggregator, viewer, executor);
+        super(metricsStorage, aggregator, viewer);
+        this.executor = executor;
     }
 
 
@@ -22,7 +24,6 @@ public class ConsoleReporter extends AbstractReporter {
         long endTimeInMillis = System.currentTimeMillis();
         long startTimeInMillis = endTimeInMillis - durationInMillis;
         executor.scheduleAtFixedRate(() -> doReport(startTimeInMillis,endTimeInMillis),0L,periodInSeconds, TimeUnit.SECONDS);
-
     }
 
 
