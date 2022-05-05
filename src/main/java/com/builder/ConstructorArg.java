@@ -36,6 +36,9 @@ public class ConstructorArg {
         }
 
         public ConstructorArgBuilder setArg(Object arg) {
+            if (arg == null){
+                throw new IllegalArgumentException("arg can not be null");
+            }
             this.arg = arg;
             return this;
         }
