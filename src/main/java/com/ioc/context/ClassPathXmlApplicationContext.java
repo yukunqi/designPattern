@@ -17,7 +17,7 @@ public class ClassPathXmlApplicationContext implements ApplicationContext{
 
     @Override
     public <T> T getBean(Class<T> beanClass) {
-        return null;
+        return beanFactory.createBean(beanClass);
     }
 
     public ClassPathXmlApplicationContext() {
@@ -27,7 +27,7 @@ public class ClassPathXmlApplicationContext implements ApplicationContext{
     }
 
     private void load(){
-        try(InputStream resourceAsStream = this.getClass().getResourceAsStream("beans.xml");){
+        try(InputStream resourceAsStream = this.getClass().getResourceAsStream("/beans.xml");){
             List<BeanDefinition> beanDefinitionList = parser.parseBean(resourceAsStream);
             beanFactory.addBeanDefinitions(beanDefinitionList);
         } catch (IOException e) {

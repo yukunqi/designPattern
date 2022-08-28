@@ -8,6 +8,7 @@ public class RateLimiter {
     }
 
     public void test() {
-        System.out.println("Hello World!");
+        System.out.println("this is RateLimiter and we are about to execute dependency object");
+        redisCounter.count();
     }
 }

@@ -7,7 +7,6 @@ public class BeanDefinition {
     private Class<?> beanClass;
     private List<BeanConstructor> beanConstructorArgumentList;
     private String scope;
-
     private boolean isLazyInit;
 
 
