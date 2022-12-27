@@ -1,0 +1,7 @@
+configs:
+  msg-center:
+    /msg/v1/sms/push:
+      limit: 30
+      unit: 100
+    /msg/v1/sms/add:
+      limit: 50
