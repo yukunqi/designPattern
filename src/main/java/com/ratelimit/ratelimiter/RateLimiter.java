@@ -1,7 +1,7 @@
 package com.ratelimit.ratelimiter;
 
-import com.ratelimit.algorithm.FixedTimeWindowRateLimit;
 import com.ratelimit.algorithm.RateLimitAlgorithm;
+import com.ratelimit.algorithm.RateLimitAlgorithmFactory;
 import com.ratelimit.config.ApiLimit;
 import com.ratelimit.config.AppRateLimitRule;
 import com.ratelimit.config.RuleConfig;
@@ -19,11 +19,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RateLimiter {
 
     private AppRateLimitRule appRateLimitRule;
+    private RateLimitAlgorithmFactory rateLimitAlgorithmFactory;
     private Map<String, RateLimitAlgorithm> rateLimitAlgorithmMap = new ConcurrentHashMap<>();
 
-    public RateLimiter() {
+    public RateLimiter(RateLimitAlgorithmFactory rateLimitAlgorithmFactory) {
         RuleConfigDataSource ruleConfigDataSource = new ClassPathFileRuleConfigDataSource();
         RuleConfig ruleConfig = ruleConfigDataSource.load();
+        this.rateLimitAlgorithmFactory = rateLimitAlgorithmFactory;
         this.appRateLimitRule = new AppRateLimitRule(ruleConfig);
     }
 
@@ -33,7 +35,8 @@ public class RateLimiter {
         String key = appId + apiLimit.getUrl();
         RateLimitAlgorithm oldRateLimitAlgorithm = rateLimitAlgorithmMap.get(key);
         if (oldRateLimitAlgorithm == null){
-            RateLimitAlgorithm newRateLimitAlgorithm = new FixedTimeWindowRateLimit(apiLimit.getLimit(),apiLimit.getUnit());
+            //todo 优化点 可以由工厂来构造实例化 具体的 限流算法 不硬编码new 出固定时间窗口的类
+            RateLimitAlgorithm newRateLimitAlgorithm = rateLimitAlgorithmFactory.createRateLimitAlgorithm(apiLimit.getLimit(),apiLimit.getUnit());
             oldRateLimitAlgorithm = rateLimitAlgorithmMap.putIfAbsent(key, newRateLimitAlgorithm);
             if (oldRateLimitAlgorithm == null){
                 //map associated with newRateLimitAlgorithm

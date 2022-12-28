@@ -1,5 +1,6 @@
 package com.ratelimit;
 
+import com.ratelimit.algorithm.RateLimitAlgorithmFactory;
 import com.ratelimit.ratelimiter.RateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,8 @@ public class MainApplication {
     private static final Logger log = LoggerFactory.getLogger(MainApplication.class);
 
     public static void main(String[] args) {
-        RateLimiter rateLimiter = new RateLimiter();
+        RateLimitAlgorithmFactory fixedWindowFactory = new RateLimitAlgorithmFactory(RateLimitAlgorithmFactory.FIXED_WINDOW);
+        RateLimiter rateLimiter = new RateLimiter(fixedWindowFactory);
 
         try {
             boolean access = rateLimiter.limit("msg-center", "/msg/v1/sms/push");
