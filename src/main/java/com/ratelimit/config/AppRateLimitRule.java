@@ -8,7 +8,6 @@ import java.util.Map;
  * @date: 2022-12-27 15:18
  **/
 public class AppRateLimitRule {
-    //todo is concurrency access ?
     private Map<String,AppIdLimit> root;
 
     public AppRateLimitRule(RuleConfig ruleConfig) {
@@ -16,6 +15,10 @@ public class AppRateLimitRule {
     }
 
     public ApiLimit getApiLimit(String appId,String url){
+        AppIdLimit appIdLimit = root.get(appId);
+        if (appIdLimit != null){
+            return appIdLimit.getLimitMap().get(url);
+        }
         return null;
     }
 }
