@@ -35,7 +35,7 @@ public class RateLimiter {
         String key = appId + apiLimit.getUrl();
         RateLimitAlgorithm oldRateLimitAlgorithm = rateLimitAlgorithmMap.get(key);
         if (oldRateLimitAlgorithm == null){
-            //todo 优化点 可以由工厂来构造实例化 具体的 限流算法 不硬编码new 出固定时间窗口的类
+            //优化点 可以由工厂来构造实例化 具体的 限流算法 不硬编码new 出固定时间窗口的类
             RateLimitAlgorithm newRateLimitAlgorithm = rateLimitAlgorithmFactory.createRateLimitAlgorithm(apiLimit.getLimit(),apiLimit.getUnit());
             oldRateLimitAlgorithm = rateLimitAlgorithmMap.putIfAbsent(key, newRateLimitAlgorithm);
             if (oldRateLimitAlgorithm == null){

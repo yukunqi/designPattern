@@ -29,7 +29,7 @@ public class AppIdLimit {
         return limitMap;
     }
 
-    //todo 优化点1 可以增加 动态的增加、删除的方法 用于 动态的增删 限流规则
+    //优化点 可以增加 动态的增加、删除的方法 用于 动态的增删 限流规则
     public void addApiLimit(String api,ApiLimit apiLimit){
         limitMap.putIfAbsent(api,apiLimit);
     }

@@ -21,7 +21,7 @@ public class ApiLimit {
     /**
      * time range for url limit count
      */
-    //todo 优化点2 这里不要赋予默认值 而是在构造函数去赋值 既然有DEFAULT_TIME_UNIT 就有自定义的时间粒度
+    //优化点 这里不要赋予默认值 而是在构造函数去赋值 既然有DEFAULT_TIME_UNIT 就有自定义的时间粒度
     private final int unit;
 
     public ApiLimit(String url, int limit) {
