@@ -53,6 +53,8 @@ public class FixedTimeWindowRateLimit implements RateLimitAlgorithm {
                     int updated;
                     if (stopwatch.elapsed(TimeUnit.SECONDS) > timeUnit){
                         stopwatch.reset();
+                        //remind by https://time.geekbang.org/column/article/243961 comment
+                        stopwatch.start();
                         currentCount.set(0);
                         updated = currentCount.incrementAndGet();
                     }else {
