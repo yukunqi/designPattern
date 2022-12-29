@@ -1,7 +1,9 @@
 package com.darklunch.core;
 
 import com.darklunch.config.DarkRuleConfig;
-import com.google.common.collect.Range;
+import com.darklunch.interpret.PercentageRuleInterpreter;
+import com.darklunch.interpret.RangeRuleInterpreter;
+import com.darklunch.interpret.ValueRuleInterpreter;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
 
@@ -29,20 +31,14 @@ public class DarkFeature implements IDarkFeature{
         for(String rule: rules) {
             try {
                 if (rule.startsWith(PERCENT_PREFIX)){
-                    String percentage = rule.substring(PERCENT_PREFIX.length());
-                    this.percentage = Integer.parseInt(percentage);
+                    PercentageRuleInterpreter percentageRuleInterpreter = new PercentageRuleInterpreter(rule);
+                    this.percentage = percentageRuleInterpreter.interpret();
                 }else if (rule.contains("-")){
-                    String[] startAndEnd = rule.split("-");
-                    if (startAndEnd.length != 2){
-                        throw new IllegalArgumentException("rule parse failed argument not correct");
-                    }
-
-                    long start = Long.parseLong(startAndEnd[0]);
-                    long end = Long.parseLong(startAndEnd[1]);
-                    this.rangeSet.add(Range.closed(start,end));
+                    RangeRuleInterpreter rangeRuleInterpreter = new RangeRuleInterpreter(rule);
+                    this.rangeSet.add(rangeRuleInterpreter.interpret());
                 }else{
-                    long number = Long.parseLong(rule);
-                    this.rangeSet.add(Range.closed(number,number));
+                    ValueRuleInterpreter valueRuleInterpreter = new ValueRuleInterpreter(rule);
+                    this.rangeSet.add(valueRuleInterpreter.interpret());
                 }
             }catch (Exception e){
                 throw new IllegalArgumentException("rule parse failed error line was: " + rule);
