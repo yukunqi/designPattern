@@ -38,7 +38,15 @@ public class DarkLunch {
         this.darkRule = new DarkRule(darkConfig);
     }
 
-    public DarkFeature getDarkFeature(String darkFeatureKey){
+    public void addProgrammedDarkFeature(String key,IDarkFeature iDarkFeature){
+        this.darkRule.addProgrammedDarkFeature(key,iDarkFeature);
+    }
+
+    public void removeProgrammedDarkFeature(String key){
+        this.darkRule.removeProgrammedDarkFeature(key);
+    }
+
+    public IDarkFeature getDarkFeature(String darkFeatureKey){
         return this.darkRule.get(darkFeatureKey);
     }
 }

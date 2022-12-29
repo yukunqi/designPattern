@@ -14,11 +14,25 @@ import java.util.Map;
  **/
 public class DarkRule {
 
-    private Map<String,DarkFeature> darkFeatureMap = new LinkedHashMap<>();
+    private Map<String,IDarkFeature> programmedDarkFeatures = new LinkedHashMap<>();
+
+    private Map<String,IDarkFeature> darkFeatureMap = new LinkedHashMap<>();
 
 
     public DarkRule(DarkConfig darkConfig) {
         this.loadConfig(darkConfig);
+    }
+
+    public void addProgrammedDarkFeature(String featureKey,IDarkFeature iDarkFeature){
+        if (darkFeatureMap.containsKey(featureKey)){
+            throw new IllegalArgumentException("config features had the same key please use another one");
+        }
+
+        programmedDarkFeatures.put(featureKey,iDarkFeature);
+    }
+
+    public void removeProgrammedDarkFeature(String featureKey){
+        programmedDarkFeatures.remove(featureKey);
     }
 
 
@@ -32,7 +46,12 @@ public class DarkRule {
 
     }
 
-    public DarkFeature get(String key){
+    public IDarkFeature get(String key){
+        IDarkFeature iDarkFeature = this.programmedDarkFeatures.get(key);
+        if (iDarkFeature != null){
+            return iDarkFeature;
+        }
+
         return this.darkFeatureMap.get(key);
     }
 }

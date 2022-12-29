@@ -10,7 +10,7 @@ import com.google.common.collect.TreeRangeSet;
  * @author: KunQi Yu
  * @date: 2022-12-29 12:29
  **/
-public class DarkFeature {
+public class DarkFeature implements IDarkFeature{
     private String key;
     private boolean enabled;
     private Integer percentage;
@@ -51,15 +51,13 @@ public class DarkFeature {
         }
     }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
 
     public String getKey() {
         return key;
     }
 
-    public boolean dark(long darkTarget){
+    @Override
+    public boolean dark(Long darkTarget){
         boolean contain = this.rangeSet.contains(darkTarget);
         if (contain){
             return true;
@@ -68,4 +66,16 @@ public class DarkFeature {
         long reminder = darkTarget % 100;
         return reminder >= 0 && reminder < this.percentage;
     }
+
+    @Override
+    public boolean enabled() {
+        return this.enabled;
+    }
+
+    @Override
+    public boolean dark(String darkTarget) {
+        long d = Long.parseLong(darkTarget);
+        return this.dark(d);
+    }
+
 }
