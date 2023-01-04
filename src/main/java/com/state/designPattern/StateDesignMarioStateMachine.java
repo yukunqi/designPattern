@@ -18,11 +18,12 @@ public class StateDesignMarioStateMachine {
         this.score = 0;
     }
 
-    protected void transferState(MarioLifeCycle next){
+
+    protected void transferState(MarioLifeCycle next){//using protected keyword in order to restrict unknown function invoke
         this.currentState = next;
     }
 
-    protected void addScore(int score){
+    protected void addScore(int score){//using protected keyword in order to restrict unknown function invoke
         this.score+=score;
     }
 
