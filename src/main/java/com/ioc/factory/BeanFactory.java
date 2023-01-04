@@ -8,5 +8,7 @@ public interface BeanFactory {
 
     <T> T createBean(BeanDefinition beanDefinition);
 
+    <T> T createBean(Class<T> beanClass);
+
     void addBeanDefinitions(List<BeanDefinition> beanDefinitionList);
 }

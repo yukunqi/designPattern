@@ -2,6 +2,7 @@ package com.ioc.parser;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.List;
 
 public class XmlBean {
@@ -20,6 +21,7 @@ public class XmlBean {
     public XmlBean() {
     }
 
+    @XmlTransient
     public String getId() {
         return id;
     }
@@ -28,6 +30,7 @@ public class XmlBean {
         this.id = id;
     }
 
+    @XmlTransient
     public String getCls() {
         return cls;
     }
@@ -36,6 +39,7 @@ public class XmlBean {
         this.cls = cls;
     }
 
+    @XmlTransient
     public String getScope() {
         return scope;
     }
@@ -44,14 +48,16 @@ public class XmlBean {
         this.scope = scope;
     }
 
-    public boolean isLazyInit() {
-        return lazyInit;
+    @XmlTransient
+    public Boolean isLazyInit() {
+        return this.lazyInit;
     }
 
     public void setLazyInit(boolean lazyInit) {
         this.lazyInit = lazyInit;
     }
 
+    @XmlTransient
     public List<XmlConstructArgument> getXmlConstructArgumentList() {
         return xmlConstructArgumentList;
     }

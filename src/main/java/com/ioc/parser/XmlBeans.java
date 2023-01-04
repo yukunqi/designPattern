@@ -2,6 +2,7 @@ package com.ioc.parser;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.List;
 
 @XmlRootElement(name = "beans")
@@ -13,6 +14,7 @@ public class XmlBeans {
     public XmlBeans() {
     }
 
+    @XmlTransient
     public List<XmlBean> getXmlBeanList() {
         return xmlBeanList;
     }

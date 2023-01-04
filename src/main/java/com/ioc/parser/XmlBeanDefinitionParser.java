@@ -49,7 +49,7 @@ public class XmlBeanDefinitionParser implements BeanDefinitionParser{
 
             return beanDefinitionList;
         }catch (Exception e){
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
 

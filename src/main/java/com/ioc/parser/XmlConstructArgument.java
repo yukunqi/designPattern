@@ -3,6 +3,7 @@ package com.ioc.parser;
 import com.ioc.model.BeanConstructor;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 
 public class XmlConstructArgument {
 
@@ -18,7 +19,7 @@ public class XmlConstructArgument {
     public XmlConstructArgument() {
     }
 
-
+    @XmlTransient
     public String getTypeOfClass() {
         return typeOfClass;
     }
@@ -26,7 +27,7 @@ public class XmlConstructArgument {
     public void setTypeOfClass(String typeOfClass) {
         this.typeOfClass = typeOfClass;
     }
-
+    @XmlTransient
     public String getValue() {
         return value;
     }
@@ -34,7 +35,7 @@ public class XmlConstructArgument {
     public void setValue(String value) {
         this.value = value;
     }
-
+    @XmlTransient
     public Integer getIndex() {
         return index;
     }
@@ -42,7 +43,7 @@ public class XmlConstructArgument {
     public void setIndex(Integer index) {
         this.index = index;
     }
-
+    @XmlTransient
     public String getRef() {
         return ref;
     }
