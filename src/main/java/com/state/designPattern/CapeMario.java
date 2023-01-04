@@ -1,11 +1,13 @@
-package com.state;
+package com.state.designPattern;
+
+import com.state.MarioState;
 
 /**
  * @description:
  * @author: KunQi Yu
  * @date: 2023-01-04 10:22
  **/
-public class CapeMario implements MarioLifeCycle{
+public class CapeMario implements MarioLifeCycle {
 
     private static class SingletonHolder{
         private static final CapeMario CAPE_MARIO = new CapeMario();

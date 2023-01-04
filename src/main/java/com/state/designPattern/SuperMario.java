@@ -1,20 +1,21 @@
-package com.state;
+package com.state.designPattern;
+
+import com.state.MarioState;
 
 /**
  * @description:
  * @author: KunQi Yu
- * @date: 2023-01-04 10:03
+ * @date: 2023-01-04 10:12
  **/
-public class SmallMario implements MarioLifeCycle{
+public class SuperMario implements MarioLifeCycle {
 
     private static class SingletonHolder{
-        private static final SmallMario SMALL_MARIO = new SmallMario();
+        private static final SuperMario SUPER_MARIO = new SuperMario();
     }
 
     @Override
     public void obtainMushRoom(StateDesignMarioStateMachine marioStateMachine) {
-        marioStateMachine.transferState(SuperMario.getSingletonInstance());
-        marioStateMachine.addScore(100);
+
     }
 
     @Override
@@ -31,18 +32,17 @@ public class SmallMario implements MarioLifeCycle{
 
     @Override
     public void meetMonster(StateDesignMarioStateMachine marioStateMachine) {
-        marioStateMachine.transferState(null);
-        int score = marioStateMachine.getScore();
-        marioStateMachine.addScore(-score);
+        marioStateMachine.transferState(SmallMario.getSingletonInstance());
+        marioStateMachine.addScore(-100);
     }
 
     @Override
     public MarioState getState() {
-        return MarioState.SMALL;
+        return MarioState.SUPER;
     }
 
 
     public static MarioLifeCycle getSingletonInstance() {
-        return SingletonHolder.SMALL_MARIO;
+        return SingletonHolder.SUPER_MARIO;
     }
 }

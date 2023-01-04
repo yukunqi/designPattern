@@ -1,7 +1,11 @@
-package com.state;
+package com.state.designPattern;
+
+import com.state.MarioState;
 
 /**
- * @description:
+ * @description: 状态模式 -> 将各个具体状态通过各自的实现类来完成SmallMario、SuperMario
+ * 运用了 访问者模式 -> v各个状态类实现MarioLifeCycle来定义对数据对象 StateDesignMarioStateMachine的操作 解耦了数据和操作两者的关系
+ *
  * @author: KunQi Yu
  * @date: 2023-01-04 09:48
  **/

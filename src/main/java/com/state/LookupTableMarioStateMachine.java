@@ -1,7 +1,7 @@
 package com.state;
 
 /**
- * @description:
+ * @description: 查表法 状态模式实现 通过二维数组 行代表当前状态 列代表事件event 确定转移后的状态
  * @author: KunQi Yu
  * @date: 2023-01-03 23:56
  **/

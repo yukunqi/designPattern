@@ -1,14 +1,20 @@
-package com.state;
+package com.state.designPattern;
+
+import com.state.MarioState;
 
 /**
  * @description:
  * @author: KunQi Yu
- * @date: 2023-01-04 10:12
+ * @date: 2023-01-04 10:24
  **/
-public class SuperMario implements MarioLifeCycle{
+public class FireFlowerMario implements MarioLifeCycle {
 
     private static class SingletonHolder{
-        private static final SuperMario SUPER_MARIO = new SuperMario();
+        private static final FireFlowerMario FIRE_FLOWER_MARIO = new FireFlowerMario();
+    }
+
+    public static FireFlowerMario getSingletonInstance(){
+        return SingletonHolder.FIRE_FLOWER_MARIO;
     }
 
     @Override
@@ -18,29 +24,22 @@ public class SuperMario implements MarioLifeCycle{
 
     @Override
     public void obtainCape(StateDesignMarioStateMachine marioStateMachine) {
-        marioStateMachine.transferState(CapeMario.getSingletonInstance());
-        marioStateMachine.addScore(200);
+
     }
 
     @Override
     public void obtainFireFlower(StateDesignMarioStateMachine marioStateMachine) {
-        marioStateMachine.transferState(FireFlowerMario.getSingletonInstance());
-        marioStateMachine.addScore(300);
+
     }
 
     @Override
     public void meetMonster(StateDesignMarioStateMachine marioStateMachine) {
         marioStateMachine.transferState(SmallMario.getSingletonInstance());
-        marioStateMachine.addScore(-100);
+        marioStateMachine.addScore(-300);
     }
 
     @Override
     public MarioState getState() {
-        return MarioState.SUPER;
-    }
-
-
-    public static MarioLifeCycle getSingletonInstance() {
-        return SingletonHolder.SUPER_MARIO;
+        return MarioState.FIRE;
     }
 }

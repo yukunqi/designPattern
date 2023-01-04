@@ -1,4 +1,6 @@
-package com.state;
+package com.state.designPattern;
+
+import com.state.MarioState;
 
 /**
  * @description:
