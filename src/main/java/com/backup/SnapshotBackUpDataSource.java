@@ -24,47 +24,57 @@ public class SnapshotBackUpDataSource {
     private String fullBackupFileName = "snapshot-full";
     private File currentIncreaseFile;
     private File currentFullFile;
-    private FileOutputStream currentIncreaseFileOutputStream;
 
 
     public SnapshotBackUpDataSource() {
         this.snapshotQueue = new LinkedBlockingQueue<>();
-        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1,new CustomNamedThreadFactory(threadNamePrefix));
-        this.fullBackupThreadPoolExecutor = new ScheduledThreadPoolExecutor(1,new CustomNamedThreadFactory(fullBackupThreadNamePrefix));
+        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(threadNamePrefix));
+        this.fullBackupThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(fullBackupThreadNamePrefix));
     }
 
-    private void start(){
+    public SnapshotBackUpDataSource(String parentDir) {
+        this.parentDir = parentDir;
+        this.snapshotQueue = new LinkedBlockingQueue<>();
+        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(threadNamePrefix));
+        this.fullBackupThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(fullBackupThreadNamePrefix));
+    }
+
+    private void start() {
 
         this.initFile();
 
         IncreaseBackupThread increaseBackupThread = new IncreaseBackupThread();
         FullBackupThread fullBackupThread = new FullBackupThread();
         this.increaseFuture = this.scheduledThreadPoolExecutor.schedule(increaseBackupThread, increaseDelay, TimeUnit.SECONDS);
-        this.fullFuture = this.fullBackupThreadPoolExecutor.schedule(fullBackupThread,fullDelay,TimeUnit.SECONDS);
+        this.fullFuture = this.fullBackupThreadPoolExecutor.schedule(fullBackupThread, fullDelay, TimeUnit.SECONDS);
     }
 
-    private void initFile(){
-        currentIncreaseFile = new File(parentDir,increaseBackupFileName);
-        if (!currentIncreaseFile.exists()){
+    private void initFile() {
+        currentIncreaseFile = new File(parentDir, increaseBackupFileName);
+        if (!currentIncreaseFile.exists()) {
             try {
                 currentIncreaseFile.createNewFile();
             } catch (IOException e) {
-                throw new IllegalArgumentException("can not create file");
+                throw new IllegalArgumentException("can not create increase file");
             }
         }
 
-        try {
-            currentIncreaseFileOutputStream = new FileOutputStream(currentIncreaseFile);
-        } catch (FileNotFoundException e) {
-            throw new IllegalArgumentException("file not found");
+        currentFullFile = new File(parentDir, fullBackupFileName);
+        if (!currentFullFile.exists()) {
+            try {
+                currentFullFile.createNewFile();
+            } catch (IOException e) {
+                throw new IllegalArgumentException("can not create full file");
+            }
         }
-    }
-
-    private void stop(){
 
     }
 
-    public void backup(Snapshot snapshot){
+    private void stop() {
+
+    }
+
+    public void backup(Snapshot snapshot) {
         try {
             this.snapshotQueue.put(snapshot);
         } catch (InterruptedException interruptedException) {
@@ -72,30 +82,76 @@ public class SnapshotBackUpDataSource {
         }
     }
 
-    public void revert(){
+    public String restore(long ts) {
+        StringBuilder stringBuilder = null;
 
+        //find in full backup
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(currentFullFile))) {
+            String prev = null;
+            String line = bufferedReader.readLine();
+            if (line != null){
+                long contentTs = Long.parseLong(line.split("\t")[0]);
+                while (contentTs <= ts) {
+                    prev = line;
+                    line = bufferedReader.readLine();
+                    contentTs = Long.parseLong(line.split("\t")[0]);
+                }
+            }
+
+            if (prev != null){
+                stringBuilder = new StringBuilder(prev.split("\t")[1]);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        //find in increase backup
+        if (stringBuilder == null){
+            stringBuilder = new StringBuilder();
+        }
+
+        try(BufferedReader bufferedReader =  new BufferedReader(new FileReader(currentIncreaseFile))){
+
+            String line;
+            while((line = bufferedReader.readLine()) != null){
+                String[] components = line.split("\t");
+                Snapshot snapshot = new Snapshot(components);
+                if (snapshot.getCreateTimeStamp() > ts){
+                    break;
+                }
+
+                snapshot.deal(stringBuilder);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return stringBuilder.toString();
     }
 
-    private class FullBackupThread implements Runnable{
+    private class FullBackupThread implements Runnable {
 
         @Override
         public void run() {
             long current = System.currentTimeMillis();
 
-            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(currentIncreaseFile))){
+            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(currentIncreaseFile))) {
                 StringBuilder stringBuilder = new StringBuilder();
                 Snapshot snapshot = null;
                 String line;
 
-                while ((line = bufferedReader.readLine()) != null){
+                while ((line = bufferedReader.readLine()) != null) {
                     String[] components = line.split("\t");
                     snapshot = new Snapshot(components);
-                    if (snapshot.getCreateTimeStamp() <= current){
+                    if (snapshot.getCreateTimeStamp() <= current) {
                         snapshot.deal(stringBuilder);
                     }
                 }
 
-                if (snapshot != null){
+                if (snapshot != null) {
                     String str = snapshot.getCreateTimeStamp() + "\t" + stringBuilder;
                     FileWriter fileWriter = new FileWriter(currentFullFile);
                     fileWriter.write(str);
@@ -110,16 +166,16 @@ public class SnapshotBackUpDataSource {
         }
     }
 
-    private class IncreaseBackupThread implements Runnable{
+    private class IncreaseBackupThread implements Runnable {
 
         @Override
         public void run() {
             long current = System.currentTimeMillis();
             Snapshot record = SnapshotBackUpDataSource.this.snapshotQueue.peek();
-            try(FileWriter fileWriter = new FileWriter(currentIncreaseFile)) {
-                if (record != null && record.getCreateTimeStamp() <= current){
+            try (FileWriter fileWriter = new FileWriter(currentIncreaseFile)) {
+                if (record != null && record.getCreateTimeStamp() <= current) {
                     record = SnapshotBackUpDataSource.this.snapshotQueue.poll();
-                    while (record != null && record.getCreateTimeStamp() <= current){
+                    while (record != null && record.getCreateTimeStamp() <= current) {
                         fileWriter.write(record.toOperatorString());
                         fileWriter.write(System.lineSeparator());
                         record = SnapshotBackUpDataSource.this.snapshotQueue.poll();
