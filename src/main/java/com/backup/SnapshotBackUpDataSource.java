@@ -86,7 +86,6 @@ public class SnapshotBackUpDataSource {
     public void stop() {
         this.scheduledThreadPoolExecutor.shutdown();
         this.fullBackupThreadPoolExecutor.shutdown();
-
     }
 
     public void backup(Snapshot snapshot) {
@@ -102,17 +101,19 @@ public class SnapshotBackUpDataSource {
         long increaseStart = 0;
         //find in full backup
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(currentFullFile))) {
-            String line = bufferedReader.readLine();
-            String prev = null;
-            if (line != null){
-                long contentTs = Long.parseLong(line.split("\t")[0]);
-                while (contentTs <= ts) {
-                    prev = line;
-                    line = bufferedReader.readLine();
-                    contentTs = Long.parseLong(line.split("\t")[0]);
+            String prev;
+            String line = null;
+            long contentTs = 0;
+            do{
+                prev = line;
+                line = bufferedReader.readLine();
+                if (line == null){
+                    break;
                 }
-                increaseStart = contentTs;
-            }
+                contentTs = Long.parseLong(line.split("\t")[0]);
+            }while (contentTs <= ts);
+
+            increaseStart = contentTs;
 
             if (prev != null){
                 stringBuilder = new StringBuilder(prev.split("\t")[1]);
