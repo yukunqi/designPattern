@@ -1,5 +1,8 @@
 package com.backup;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.util.concurrent.*;
 
@@ -10,13 +13,14 @@ import java.util.concurrent.*;
  **/
 public class SnapshotBackUpDataSource {
 
+    private static final Logger log = LoggerFactory.getLogger(SnapshotBackUpDataSource.class);
     private BlockingQueue<Snapshot> snapshotQueue;
     private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
     private ScheduledThreadPoolExecutor fullBackupThreadPoolExecutor;
     private final String threadNamePrefix = "increase-backup-threadPool";
     private final String fullBackupThreadNamePrefix = "full-backup-threadPool";
     private int increaseDelay = 1;
-    private int fullDelay = 5 * 60;
+    private int fullDelay = 1 * 6;
     private ScheduledFuture<?> increaseFuture;
     private ScheduledFuture<?> fullFuture;
     private String parentDir = "/Users/kunqi.yu/Downloads/snapshot";
@@ -24,12 +28,14 @@ public class SnapshotBackUpDataSource {
     private String fullBackupFileName = "snapshot-full";
     private File currentIncreaseFile;
     private File currentFullFile;
+    private CountDownLatch stopLatch = new CountDownLatch(2);
 
 
     public SnapshotBackUpDataSource() {
         this.snapshotQueue = new LinkedBlockingQueue<>();
         this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(threadNamePrefix));
         this.fullBackupThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(fullBackupThreadNamePrefix));
+        this.start();
     }
 
     public SnapshotBackUpDataSource(String parentDir) {
@@ -37,6 +43,7 @@ public class SnapshotBackUpDataSource {
         this.snapshotQueue = new LinkedBlockingQueue<>();
         this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(threadNamePrefix));
         this.fullBackupThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(fullBackupThreadNamePrefix));
+        this.start();
     }
 
     private void start() {
@@ -50,11 +57,17 @@ public class SnapshotBackUpDataSource {
     }
 
     private void initFile() {
+        File directory = new File(parentDir);
+        if (!directory.exists()){
+            directory.mkdirs();
+        }
+
         currentIncreaseFile = new File(parentDir, increaseBackupFileName);
         if (!currentIncreaseFile.exists()) {
             try {
                 currentIncreaseFile.createNewFile();
             } catch (IOException e) {
+                e.printStackTrace();
                 throw new IllegalArgumentException("can not create increase file");
             }
         }
@@ -70,7 +83,9 @@ public class SnapshotBackUpDataSource {
 
     }
 
-    private void stop() {
+    public void stop() {
+        this.scheduledThreadPoolExecutor.shutdown();
+        this.fullBackupThreadPoolExecutor.shutdown();
 
     }
 
@@ -84,11 +99,11 @@ public class SnapshotBackUpDataSource {
 
     public String restore(long ts) {
         StringBuilder stringBuilder = null;
-
+        long increaseStart = 0;
         //find in full backup
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(currentFullFile))) {
-            String prev = null;
             String line = bufferedReader.readLine();
+            String prev = null;
             if (line != null){
                 long contentTs = Long.parseLong(line.split("\t")[0]);
                 while (contentTs <= ts) {
@@ -96,6 +111,7 @@ public class SnapshotBackUpDataSource {
                     line = bufferedReader.readLine();
                     contentTs = Long.parseLong(line.split("\t")[0]);
                 }
+                increaseStart = contentTs;
             }
 
             if (prev != null){
@@ -114,6 +130,7 @@ public class SnapshotBackUpDataSource {
 
         try(BufferedReader bufferedReader =  new BufferedReader(new FileReader(currentIncreaseFile))){
 
+            //increase deal in [increaseStart,ts] area
             String line;
             while((line = bufferedReader.readLine()) != null){
                 String[] components = line.split("\t");
@@ -122,7 +139,9 @@ public class SnapshotBackUpDataSource {
                     break;
                 }
 
-                snapshot.deal(stringBuilder);
+                if (increaseStart <= snapshot.getCreateTimeStamp()){
+                    snapshot.deal(stringBuilder);
+                }
             }
 
         } catch (IOException e) {
@@ -136,6 +155,7 @@ public class SnapshotBackUpDataSource {
 
         @Override
         public void run() {
+            log.info("full back up start");
             long current = System.currentTimeMillis();
 
             try (BufferedReader bufferedReader = new BufferedReader(new FileReader(currentIncreaseFile))) {
@@ -162,7 +182,12 @@ public class SnapshotBackUpDataSource {
 
             } catch (IOException e) {
                 e.printStackTrace();
+            }catch (Exception e){
+                e.printStackTrace();
             }
+
+
+            log.info("full back up end");
         }
     }
 
@@ -170,6 +195,7 @@ public class SnapshotBackUpDataSource {
 
         @Override
         public void run() {
+            log.info("increase back up start");
             long current = System.currentTimeMillis();
             Snapshot record = SnapshotBackUpDataSource.this.snapshotQueue.peek();
             try (FileWriter fileWriter = new FileWriter(currentIncreaseFile)) {
@@ -184,7 +210,12 @@ public class SnapshotBackUpDataSource {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            }catch (Exception e){
+                e.printStackTrace();
             }
+
+
+            log.info("increase back up end");
         }
     }
 }
