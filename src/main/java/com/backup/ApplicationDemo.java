@@ -11,7 +11,7 @@ public class ApplicationDemo {
 
     public static void main(String[] args) {
         DataObject dataObject = new DataObject();
-        int n = 30;
+        int n = 5;
 
         for (int i = 0; i < n; i++) {
             String s = RandomStringUtils.randomAlphabetic(3);
@@ -40,5 +40,6 @@ public class ApplicationDemo {
         System.out.printf("compare two string result : %s\n",newStr.equals(old));
 
         newDataObject.close();
+
     }
 }

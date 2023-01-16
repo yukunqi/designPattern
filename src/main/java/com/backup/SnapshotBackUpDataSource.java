@@ -4,7 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @description:
@@ -21,28 +24,24 @@ public class SnapshotBackUpDataSource {
     private final String fullBackupThreadNamePrefix = "full-backup-threadPool";
     private int increaseDelay = 1;
     private int fullDelay = 1 * 6;
-    private ScheduledFuture<?> increaseFuture;
-    private ScheduledFuture<?> fullFuture;
-    private String parentDir = "/Users/kunqi.yu/Downloads/snapshot";
+    private String parentDir;
+    private static final String defaultParentDir = "/Users/kunqi.yu/Downloads/snapshot";
     private String increaseBackupFileName = "snapshot-increase";
     private String fullBackupFileName = "snapshot-full";
     private File currentIncreaseFile;
     private File currentFullFile;
-    private CountDownLatch stopLatch = new CountDownLatch(2);
 
 
     public SnapshotBackUpDataSource() {
-        this.snapshotQueue = new LinkedBlockingQueue<>();
-        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(threadNamePrefix));
-        this.fullBackupThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(fullBackupThreadNamePrefix));
-        this.start();
+        this(defaultParentDir);
     }
 
     public SnapshotBackUpDataSource(String parentDir) {
         this.parentDir = parentDir;
         this.snapshotQueue = new LinkedBlockingQueue<>();
-        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(threadNamePrefix));
-        this.fullBackupThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(fullBackupThreadNamePrefix));
+        String hash = String.valueOf(this.hashCode());
+        this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(hash+"-"+threadNamePrefix));
+        this.fullBackupThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new CustomNamedThreadFactory(hash+"-"+fullBackupThreadNamePrefix));
         this.start();
     }
 
@@ -52,8 +51,8 @@ public class SnapshotBackUpDataSource {
 
         IncreaseBackupThread increaseBackupThread = new IncreaseBackupThread();
         FullBackupThread fullBackupThread = new FullBackupThread();
-        this.increaseFuture = this.scheduledThreadPoolExecutor.schedule(increaseBackupThread, increaseDelay, TimeUnit.SECONDS);
-        this.fullFuture = this.fullBackupThreadPoolExecutor.schedule(fullBackupThread, fullDelay, TimeUnit.SECONDS);
+        this.scheduledThreadPoolExecutor.schedule(increaseBackupThread, increaseDelay, TimeUnit.SECONDS);
+        this.fullBackupThreadPoolExecutor.schedule(fullBackupThread, fullDelay, TimeUnit.SECONDS);
     }
 
     private void initFile() {
@@ -158,7 +157,7 @@ public class SnapshotBackUpDataSource {
         public void run() {
             log.info("full back up start");
             long current = System.currentTimeMillis();
-
+            //fixme 多线程并发会全量备份同样的数据到文件中，需要从当前全量数据文件的末尾时间戳(fullFileEnd)作为起点开始搜索增量文件 将(fullFileEnd,current]范围的数据变化重放然后更新数据文件
             try (BufferedReader bufferedReader = new BufferedReader(new FileReader(currentIncreaseFile))) {
                 StringBuilder stringBuilder = new StringBuilder();
                 Snapshot snapshot = null;
@@ -174,7 +173,7 @@ public class SnapshotBackUpDataSource {
 
                 if (snapshot != null) {
                     String str = snapshot.getCreateTimeStamp() + "\t" + stringBuilder;
-                    FileWriter fileWriter = new FileWriter(currentFullFile);
+                    FileWriter fileWriter = new FileWriter(currentFullFile,true);
                     fileWriter.write(str);
                     fileWriter.write(System.lineSeparator());
                     fileWriter.flush();
@@ -199,7 +198,8 @@ public class SnapshotBackUpDataSource {
             log.info("increase back up start");
             long current = System.currentTimeMillis();
             Snapshot record = SnapshotBackUpDataSource.this.snapshotQueue.peek();
-            try (FileWriter fileWriter = new FileWriter(currentIncreaseFile)) {
+            //fixme 使用buffered 类 避免并发问题
+            try (FileWriter fileWriter = new FileWriter(currentIncreaseFile,true)) {
                 if (record != null && record.getCreateTimeStamp() <= current) {
                     record = SnapshotBackUpDataSource.this.snapshotQueue.poll();
                     while (record != null && record.getCreateTimeStamp() <= current) {
